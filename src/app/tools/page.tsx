@@ -2,34 +2,34 @@ export default function Tools() {
     return (
         <main>
             <div className="container prose fade-in-up">
-                <h1 className="text-gradient" style={{ fontSize: '3rem' }}>AI Tool Arsenal</h1>
+                <h1 className="text-gradient" style={{ fontSize: '3rem' }}>AI 工具库</h1>
                 <p style={{ fontSize: '1.2rem', marginBottom: '3rem' }}>
-                    My personally curated list of AI tools and configurations to maximize productivity.
+                    这是我亲自挑选的能将生产力最大化的 AI 工具和配置清单。
                 </p>
 
                 <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
 
                     <div className="glass glass-card delay-1">
                         <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>🤖 DeepSeek / ChatGPT</h3>
-                        <p>Used for daily problem solving, ideation, and drafting structured documents.</p>
+                        <p>用于日常问题排查、创意激荡以及起草结构化文档。</p>
                         <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                            Tags: <span style={{ color: 'var(--accent-hover)' }}>LLM</span>, <span style={{ color: 'var(--accent-hover)' }}>Text Gen</span>
+                            标签: <span style={{ color: 'var(--accent-hover)' }}>大模型</span>, <span style={{ color: 'var(--accent-hover)' }}>文本生成</span>
                         </div>
                     </div>
 
                     <div className="glass glass-card delay-2">
                         <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>💻 Cursor / GitHub Copilot</h3>
-                        <p>The best AI programming tools that literally write the boilerplate for you and speed up the coding process by 10x.</p>
+                        <p>最好的 AI 编程工具，能够直接写出基础代码，将编码过程加速十倍。</p>
                         <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                            Tags: <span style={{ color: 'var(--accent-hover)' }}>Coding</span>, <span style={{ color: 'var(--accent-hover)' }}>IDE</span>
+                            标签: <span style={{ color: 'var(--accent-hover)' }}>编程</span>, <span style={{ color: 'var(--accent-hover)' }}>IDE编辑器</span>
                         </div>
                     </div>
 
                     <div className="glass glass-card delay-3">
                         <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>📝 Notion AI</h3>
-                        <p>Summarizing meeting notes, translating text, and organizing my reading list intuitively.</p>
+                        <p>用于总结会议纪要、翻译文本和更加直观地整理我的阅读列表。</p>
                         <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                            Tags: <span style={{ color: 'var(--accent-hover)' }}>Productivity</span>, <span style={{ color: 'var(--accent-hover)' }}>Notes</span>
+                            标签: <span style={{ color: 'var(--accent-hover)' }}>生产力</span>, <span style={{ color: 'var(--accent-hover)' }}>笔记簿</span>
                         </div>
                     </div>
 
