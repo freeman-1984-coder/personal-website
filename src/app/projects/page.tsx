@@ -2,8 +2,8 @@ export default function Projects() {
     return (
         <main>
             <div className="container prose fade-in-up">
-                <h1 className="text-gradient" style={{ fontSize: '3rem' }}>我的项目</h1>
-                <p style={{ fontSize: '1.2rem', marginBottom: '3rem' }}>这里是我最近在做的一些好玩的事情。</p>
+                <h1 className="text-gradient" style={{ fontSize: '3rem' }}>项目</h1>
+                <p style={{ fontSize: '1.2rem', marginBottom: '3rem' }}>我参与或创建的一些项目和代码。</p>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
                     {/* Placeholder for project cards */}

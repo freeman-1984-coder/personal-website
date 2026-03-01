@@ -2,9 +2,9 @@ export default function Thoughts() {
     return (
         <main>
             <div className="container prose fade-in-up">
-                <h1 className="text-gradient" style={{ fontSize: '3rem' }}>思考与随笔</h1>
+                <h1 className="text-gradient" style={{ fontSize: '3rem' }}>思考</h1>
                 <p style={{ fontSize: '1.2rem', marginBottom: '3rem' }}>
-                    我对投资策略、持续学习、商业模式和生活的反思。
+                    投资、生活、和我的一些想法。
                 </p>
 
                 <article className="glass glass-card delay-1" style={{ marginBottom: '2rem' }}>

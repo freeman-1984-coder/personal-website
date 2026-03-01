@@ -6,7 +6,7 @@ export default function Knowledge() {
             <div className="container prose fade-in-up">
                 <h1 className="text-gradient" style={{ fontSize: '3rem' }}>知识库</h1>
                 <p style={{ fontSize: '1.2rem', marginBottom: '3rem' }}>
-                    我结构化的学习笔记、教程和各种技术的深度剖析。
+                    记录技术细节和踩过的坑。
                 </p>
 
                 <div className="glass glass-card delay-1" style={{ marginBottom: '2rem' }}>

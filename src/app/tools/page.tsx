@@ -2,9 +2,9 @@ export default function Tools() {
     return (
         <main>
             <div className="container prose fade-in-up">
-                <h1 className="text-gradient" style={{ fontSize: '3rem' }}>AI 工具库</h1>
+                <h1 className="text-gradient" style={{ fontSize: '3rem' }}>AI 工具</h1>
                 <p style={{ fontSize: '1.2rem', marginBottom: '3rem' }}>
-                    这是我亲自挑选的能将生产力最大化的 AI 工具和配置清单。
+                    记录的一些AI 工具，以及我在用的一些AI 工具。
                 </p>
 
                 <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
