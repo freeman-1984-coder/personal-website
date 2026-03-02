@@ -10,8 +10,9 @@ export async function generateStaticParams() {
     }));
 }
 
-export default function ToolPost({ params }: { params: { slug: string } }) {
-    const postData = getPostData('tools', params.slug);
+export default async function ToolPost({ params }: { params: Promise<{ slug: string }> }) {
+    const resolvedParams = await params;
+    const postData = getPostData('tools', resolvedParams.slug);
 
     return (
         <main>

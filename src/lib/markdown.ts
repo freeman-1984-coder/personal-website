@@ -46,13 +46,14 @@ export function getSortedPostsData(category: string): Omit<MarkdownDocument, 'co
 }
 
 export function getPostData(category: string, slug: string): MarkdownDocument {
-    const fullPath = path.join(contentDirectory, category, `${slug}.md`);
+    const decodedSlug = decodeURIComponent(slug);
+    const fullPath = path.join(contentDirectory, category, `${decodedSlug}.md`);
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const matterResult = matter(fileContents);
 
     return {
-        slug,
-        title: matterResult.data.title || slug,
+        slug: decodedSlug,
+        title: matterResult.data.title || decodedSlug,
         date: matterResult.data.date || '',
         description: matterResult.data.description || '',
         content: matterResult.content,

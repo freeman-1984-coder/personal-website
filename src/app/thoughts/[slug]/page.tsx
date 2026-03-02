@@ -10,8 +10,9 @@ export async function generateStaticParams() {
     }));
 }
 
-export default function ThoughtPost({ params }: { params: { slug: string } }) {
-    const postData = getPostData('thoughts', params.slug);
+export default async function ThoughtPost({ params }: { params: Promise<{ slug: string }> }) {
+    const resolvedParams = await params;
+    const postData = getPostData('thoughts', resolvedParams.slug);
 
     return (
         <main>

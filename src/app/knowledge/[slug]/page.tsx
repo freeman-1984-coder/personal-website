@@ -10,8 +10,9 @@ export async function generateStaticParams() {
     }));
 }
 
-export default function KnowledgePost({ params }: { params: { slug: string } }) {
-    const postData = getPostData('knowledge', params.slug);
+export default async function KnowledgePost({ params }: { params: Promise<{ slug: string }> }) {
+    const resolvedParams = await params;
+    const postData = getPostData('knowledge', resolvedParams.slug);
 
     return (
         <main>

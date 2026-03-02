@@ -10,8 +10,9 @@ export async function generateStaticParams() {
     }));
 }
 
-export default function ProjectPost({ params }: { params: { slug: string } }) {
-    const postData = getPostData('projects', params.slug);
+export default async function ProjectPost({ params }: { params: Promise<{ slug: string }> }) {
+    const resolvedParams = await params;
+    const postData = getPostData('projects', resolvedParams.slug);
 
     return (
         <main>
