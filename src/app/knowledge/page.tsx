@@ -1,6 +1,9 @@
-import React from 'react';
+import Link from 'next/link';
+import { getSortedPostsData } from '@/lib/markdown';
 
 export default function Knowledge() {
+    const posts = getSortedPostsData('knowledge');
+
     return (
         <main>
             <div className="container prose fade-in-up">
@@ -9,17 +12,18 @@ export default function Knowledge() {
                     记录技术细节和踩过的坑。
                 </p>
 
-                <div className="glass glass-card delay-1" style={{ marginBottom: '2rem' }}>
-                    <h2>前端开发</h2>
-                    <p>关于 React、Next.js 和现代 CSS 技术的笔记。</p>
-                    <a href="#" style={{ color: 'var(--accent-hover)', fontWeight: 'bold' }}>探索 ➔</a>
-                </div>
+                {posts.map((post, index) => (
+                    <div key={post.slug} className={`glass glass-card delay-${(index % 3) + 1}`} style={{ marginBottom: '2rem' }}>
+                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>{post.date}</div>
+                        <h2>{post.title}</h2>
+                        <p>{post.description}</p>
+                        <Link href={`/knowledge/${post.slug}`} style={{ color: 'var(--accent-hover)', fontWeight: 'bold' }}>探索 ➔</Link>
+                    </div>
+                ))}
 
-                <div className="glass glass-card delay-2">
-                    <h2>后端架构</h2>
-                    <p>数据库设计、API 策略和可扩展的系统架构。</p>
-                    <a href="#" style={{ color: 'var(--accent-hover)', fontWeight: 'bold' }}>探索 ➔</a>
-                </div>
+                {posts.length === 0 && (
+                    <p style={{ color: 'var(--text-secondary)' }}>还没有发布任何内容，去 `content/knowledge` 目录下新建 markdown 吧！</p>
+                )}
             </div>
         </main>
     );

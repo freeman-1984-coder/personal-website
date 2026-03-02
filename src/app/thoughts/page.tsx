@@ -1,4 +1,9 @@
+import Link from 'next/link';
+import { getSortedPostsData } from '@/lib/markdown';
+
 export default function Thoughts() {
+    const posts = getSortedPostsData('thoughts');
+
     return (
         <main>
             <div className="container prose fade-in-up">
@@ -7,23 +12,20 @@ export default function Thoughts() {
                     投资、生活、和我的一些想法。
                 </p>
 
-                <article className="glass glass-card delay-1" style={{ marginBottom: '2rem' }}>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>2024年10月20日</div>
-                    <h2>SaaS 商业模式的演变</h2>
-                    <p>
-                        经常性收入如何将重点从最初的用户获取完全转移到长期的客户留存与扩张...
-                    </p>
-                    <a href="#" style={{ color: 'var(--accent-hover)', fontWeight: 'bold' }}>阅读更多 ➔</a>
-                </article>
+                {posts.map((post, index) => (
+                    <article key={post.slug} className={`glass glass-card delay-${(index % 3) + 1}`} style={{ marginBottom: '2rem' }}>
+                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>{post.date}</div>
+                        <h2>{post.title}</h2>
+                        <p>{post.description}</p>
+                        <Link href={`/thoughts/${post.slug}`} style={{ color: 'var(--accent-hover)', fontWeight: 'bold' }}>
+                            阅读更多 ➔
+                        </Link>
+                    </article>
+                ))}
 
-                <article className="glass glass-card delay-2">
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>2024年10月12日</div>
-                    <h2>个人成长的复利效应</h2>
-                    <p>
-                        如果你每天进步 1%，一年下来你将变得强大 37 倍。这是我如何记录这一过程的...
-                    </p>
-                    <a href="#" style={{ color: 'var(--accent-hover)', fontWeight: 'bold' }}>阅读更多 ➔</a>
-                </article>
+                {posts.length === 0 && (
+                    <p style={{ color: 'var(--text-secondary)' }}>还没有发布任何内容，去 `content/thoughts` 目录下新建 markdown 吧！</p>
+                )}
             </div>
         </main>
     );

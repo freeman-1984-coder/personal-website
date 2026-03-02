@@ -1,4 +1,9 @@
+import Link from 'next/link';
+import { getSortedPostsData } from '@/lib/markdown';
+
 export default function Tools() {
+    const posts = getSortedPostsData('tools');
+
     return (
         <main>
             <div className="container prose fade-in-up">
@@ -9,31 +14,23 @@ export default function Tools() {
 
                 <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
 
-                    <div className="glass glass-card delay-1">
-                        <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>🤖 DeepSeek / ChatGPT</h3>
-                        <p>用于日常问题排查、创意激荡以及起草结构化文档。</p>
-                        <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                            标签: <span style={{ color: 'var(--accent-hover)' }}>大模型</span>, <span style={{ color: 'var(--accent-hover)' }}>文本生成</span>
+                    {posts.map((post, index) => (
+                        <div key={post.slug} className={`glass glass-card delay-${(index % 3) + 1}`}>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{post.title}</h3>
+                            <p>{post.description}</p>
+                            <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
+                                <Link href={`/tools/${post.slug}`} style={{ color: 'var(--accent-hover)', fontWeight: 'bold' }}>
+                                    阅读更多 ➔
+                                </Link>
+                            </div>
                         </div>
-                    </div>
-
-                    <div className="glass glass-card delay-2">
-                        <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>💻 Cursor / GitHub Copilot</h3>
-                        <p>最好的 AI 编程工具，能够直接写出基础代码，将编码过程加速十倍。</p>
-                        <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                            标签: <span style={{ color: 'var(--accent-hover)' }}>编程</span>, <span style={{ color: 'var(--accent-hover)' }}>IDE编辑器</span>
-                        </div>
-                    </div>
-
-                    <div className="glass glass-card delay-3">
-                        <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>📝 Notion AI</h3>
-                        <p>用于总结会议纪要、翻译文本和更加直观地整理我的阅读列表。</p>
-                        <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                            标签: <span style={{ color: 'var(--accent-hover)' }}>生产力</span>, <span style={{ color: 'var(--accent-hover)' }}>笔记簿</span>
-                        </div>
-                    </div>
+                    ))}
 
                 </section>
+
+                {posts.length === 0 && (
+                    <p style={{ color: 'var(--text-secondary)' }}>还没有发布任何内容，去 `content/tools` 目录下新建 markdown 吧！</p>
+                )}
             </div>
         </main>
     );
