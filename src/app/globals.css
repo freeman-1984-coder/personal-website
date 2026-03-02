@@ -278,6 +278,7 @@ main {
 
 .prose p {
   margin-bottom: 1.25rem;
+  white-space: pre-wrap;
 }
 
 .prose ul,
