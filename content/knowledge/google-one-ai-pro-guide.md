@@ -80,31 +80,31 @@ graph TD
     classDef storage fill:#FAFAFA,stroke:#9E9E9E,stroke-width:2px,stroke-dasharray: 5 5;
 
     %% 节点定义
-    subgraph 第一阶段：数据采集与输入
-        DR[Deep Research\n深入全网搜集最新资讯与研报]:::collect
-        Man[手动上传\nPDF/书籍/代码库/音视频]:::collect
+    subgraph "第一阶段：数据采集与输入"
+        DR["Deep Research\n深入全网搜集最新资讯与研报"]:::collect
+        Man["手动上传\nPDF/书籍/代码库/音视频"]:::collect
     end
 
-    subgraph 核心大脑：存储与上下文
-        Drive[(Google Drive 2TB\n统一存储基地)]:::storage
-        Context[100万 Token 上下文窗口\n海量信息同时吞咽]:::storage
+    subgraph "核心大脑：存储与上下文"
+        Drive[("Google Drive 2TB\n统一存储基地")]:::storage
+        Context["100万 Token 上下文窗口\n海量信息同时吞咽"]:::storage
     end
 
-    subgraph 第二阶段：处理与重构
-        NLM[NotebookLM Plus\n建立知识图谱/生成音频播客]:::process
-        Sheets[Gemini in Sheets\n清洗数据/计算公式/图表化]:::process
+    subgraph "第二阶段：处理与重构"
+        NLM["NotebookLM Plus\n建立知识图谱/生成音频播客"]:::process
+        Sheets["Gemini in Sheets\n清洗数据/计算公式/图表化"]:::process
     end
 
-    subgraph 第三阶段：深度分析与创作
-        GA[Gemini Advanced\n复杂逻辑推理/深度思考]:::analyze
-        Jules[Jules & Antigravity\nAI 智能编程与架构搭建]:::analyze
-        Media[Whisk/Flow\n生成插图与短视频素材]:::analyze
+    subgraph "第三阶段：深度分析与创作"
+        GA["Gemini Advanced\n复杂逻辑推理/深度思考"]:::analyze
+        Jules["Jules & Antigravity\nAI 智能编程与架构搭建"]:::analyze
+        Media["Whisk/Flow\n生成插图与短视频素材"]:::analyze
     end
 
-    subgraph 第四阶段：成果输出与应用
-        Docs[Google Docs\n输出外语学习指南/万字财报分析]:::output
-        Code[个人网站项目\n直接输出可运行代码]:::output
-        Live[Gemini Live\n语音对话/实战口语模拟]:::output
+    subgraph "第四阶段：成果输出与应用"
+        Docs["Google Docs\n输出外语学习指南/万字财报分析"]:::output
+        Code["个人网站项目\n直接输出可运行代码"]:::output
+        Live["Gemini Live\n语音对话/实战口语模拟"]:::output
     end
 
     %% 连接线
