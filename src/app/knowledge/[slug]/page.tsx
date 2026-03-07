@@ -1,6 +1,5 @@
 import { getPostData, getSortedPostsData } from '@/lib/markdown';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 import Link from 'next/link';
 
 export async function generateStaticParams() {
@@ -27,9 +26,7 @@ export default async function KnowledgePost({ params }: { params: Promise<{ slug
                         <div style={{ color: 'var(--text-secondary)' }}>发布于 {postData.date}</div>
                     </header>
                     <div style={{ color: 'var(--text-primary)', lineHeight: '1.8' }}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {postData.content}
-                        </ReactMarkdown>
+                        <MarkdownRenderer content={postData.content} />
                     </div>
                 </article>
             </div>
