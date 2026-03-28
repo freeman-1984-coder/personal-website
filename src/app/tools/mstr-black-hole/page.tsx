@@ -120,9 +120,9 @@ export default function MSTRBitcoinBlackHole() {
           <motion.h2 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-gray-500 text-xs sm:text-sm tracking-[0.3em] uppercase"
+            className="text-gray-500 text-xs sm:text-sm tracking-[0.5em] uppercase font-bold"
           >
-            Terminal Output // MSTR Entity
+            MICROSTRATEGY // 比特币引力特异点
           </motion.h2>
 
           {/* 2. Main Holdings Counter */}
@@ -150,7 +150,7 @@ export default function MSTRBitcoinBlackHole() {
               className="w-3 h-3 bg-red-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,1)]"
             />
             <span>
-              {totalUsdValue ? formatCurrency(totalUsdValue) : "CALCULATING GRAVITATIONAL MASS..."}
+              {totalUsdValue ? formatCurrency(totalUsdValue) : "引力质量计算中..."}
             </span>
           </div>
         </div>
@@ -161,8 +161,8 @@ export default function MSTRBitcoinBlackHole() {
           {/* % of Total Supply */}
           <div className="space-y-4">
             <div className="flex justify-between items-end">
-              <span className="text-gray-400 uppercase text-xs sm:text-sm tracking-wider">
-                % Total Supply (21M)
+              <span className="text-gray-400 uppercase text-xs sm:text-sm tracking-widest">
+                占比特币总供应量 (21M)
               </span>
               <span className="text-[#F7931A] font-bold text-lg sm:text-xl">{pctTotal}%</span>
             </div>
@@ -180,8 +180,8 @@ export default function MSTRBitcoinBlackHole() {
           {/* % of Circulating Supply */}
           <div className="space-y-4">
             <div className="flex justify-between items-end">
-              <span className="text-gray-400 uppercase text-xs sm:text-sm tracking-wider">
-                % Circulating Supply
+              <span className="text-gray-400 uppercase text-xs sm:text-sm tracking-widest">
+                占当前市场流通量
               </span>
               <span className="text-[#F7931A] font-bold text-lg sm:text-xl">{pctCirculating}%</span>
             </div>
@@ -212,7 +212,7 @@ export default function MSTRBitcoinBlackHole() {
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.008 3.974H5.078z" />
             </svg>
             <span className="font-bold uppercase tracking-widest text-sm sm:text-base md:text-lg">
-              Deploy to X
+              向 X 广播引力异动
             </span>
           </a>
         </div>
