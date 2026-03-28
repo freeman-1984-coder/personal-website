@@ -14,8 +14,19 @@ export default function Tools() {
 
                 <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
 
+                    {/* Hardcoded interactive tool: MSTR Black Hole */}
+                    <div className="glass glass-card delay-1">
+                        <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>MSTR 比特币黑洞</h3>
+                        <p>可视化呈现微策略（MicroStrategy）疯狂的比特币吞噬与黑洞效应，极具视觉冲击力的实时数据看板。</p>
+                        <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
+                            <Link href="/tools/mstr-black-hole" style={{ color: 'var(--accent-hover)', fontWeight: 'bold' }}>
+                                立即体验 ➔
+                            </Link>
+                        </div>
+                    </div>
+
                     {posts.map((post, index) => (
-                        <div key={post.slug} className={`glass glass-card delay-${(index % 3) + 1}`}>
+                        <div key={post.slug} className={`glass glass-card delay-${((index + 1) % 4) + 1}`}>
                             <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{post.title}</h3>
                             <p>{post.description}</p>
                             <div style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>

@@ -1,0 +1,16 @@
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Ensure the background image from globals.css is removed on this specific route */
+.mstr-black-hole-wrapper {
+  background-color: black;
+  color: white;
+  min-height: 100vh;
+  width: 100%;
+}

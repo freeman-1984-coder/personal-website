@@ -2,27 +2,85 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
+// --- Presets Data ---
+const PRESETS: { name: string; data: number[][] }[] = [
+  {
+    name: "Glider",
+    data: [
+      [0, 1, 0],
+      [0, 0, 1],
+      [1, 1, 1],
+    ],
+  },
+  {
+    name: "Blinker",
+    data: [[1, 1, 1]],
+  },
+  {
+    name: "Pulsar",
+    data: [
+      "0011100011100",
+      "0000000000000",
+      "1000010100001",
+      "1000010100001",
+      "1000010100001",
+      "0011100011100",
+      "0000000000000",
+      "0011100011100",
+      "1000010100001",
+      "1000010100001",
+      "1000010100001",
+      "0000000000000",
+      "0011100011100",
+    ].map((r) => r.split("").map(Number)),
+  },
+  {
+    name: "Gosper Glider Gun",
+    data: [
+      "000000000000000000000000100000000000",
+      "000000000000000000000010100000000000",
+      "000000000000110000001100000000000011",
+      "000000000001000100001100000000000011",
+      "110000000010000010001100000000000000",
+      "110000000010001011000010100000000000",
+      "000000000010000010000000100000000000",
+      "000000000001000100000000000000000000",
+      "000000000000110000000000000000000000",
+    ].map((r) => r.split("").map(Number)),
+  },
+];
+
 // --- Game Logic Helpers ---
 
-function countNeighbors(
-  grid: Uint8Array,
-  r: number,
-  c: number,
-  rows: number,
-  cols: number
-): number {
-  let count = 0;
-  for (let dr = -1; dr <= 1; dr++) {
-    for (let dc = -1; dc <= 1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      const nr = (r + dr + rows) % rows;
-      const nc = (c + dc + cols) % cols;
-      count += grid[nr * cols + nc];
+// Bresenham's line algorithm for smooth drawing
+function getBresenhamLine(r0: number, c0: number, r1: number, c1: number) {
+  const points = [];
+  const dr = Math.abs(r1 - r0);
+  const dc = Math.abs(c1 - c0);
+  const sr = r0 < r1 ? 1 : -1;
+  const sc = c0 < c1 ? 1 : -1;
+  let err = (dc > dr ? dc : -dr) / 2;
+
+  let r = r0;
+  let c = c0;
+
+  while (true) {
+    points.push({ r, c });
+    if (r === r1 && c === c1) break;
+    const e2 = err;
+    if (e2 > -dc) {
+      err -= dr;
+      c += sc;
+    }
+    if (e2 < dr) {
+      err += dc;
+      r += sr;
     }
   }
-  return count;
+  return points;
 }
 
+// Optimized Grid Stepping
 function stepGrid(
   current: Uint8Array,
   next: Uint8Array,
@@ -32,11 +90,36 @@ function stepGrid(
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const idx = r * cols + c;
-      const neighbors = countNeighbors(current, r, c, rows, cols);
+      let count = 0;
+
+      // Fast path for inner cells to entirely avoid expensive modulo math
+      if (r > 0 && r < rows - 1 && c > 0 && c < cols - 1) {
+        const up = (r - 1) * cols;
+        const down = (r + 1) * cols;
+        count =
+          current[up + c - 1] +
+          current[up + c] +
+          current[up + c + 1] +
+          current[idx - 1] +
+          current[idx + 1] +
+          current[down + c - 1] +
+          current[down + c] +
+          current[down + c + 1];
+      } else {
+        // Slow path bounds wrapped for edges
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = (r + dr + rows) % rows;
+            const nc = (c + dc + cols) % cols;
+            count += current[nr * cols + nc];
+          }
+        }
+      }
+
       const alive = current[idx];
       next[idx] =
-        (alive && (neighbors === 2 || neighbors === 3)) ||
-        (!alive && neighbors === 3)
+        (alive && (count === 2 || count === 3)) || (!alive && count === 3)
           ? 1
           : 0;
     }
@@ -53,6 +136,8 @@ function randomizeGrid(grid: Uint8Array, density = 0.3): void {
 
 export default function GameOfLife() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bgCanvasRef = useRef<HTMLCanvasElement | null>(null); // Grid cache
+
   const gridARef = useRef<Uint8Array | null>(null);
   const gridBRef = useRef<Uint8Array | null>(null);
   const currentGridRef = useRef<"A" | "B">("A");
@@ -64,21 +149,18 @@ export default function GameOfLife() {
   const [speed, setSpeed] = useState(100);
   const [cellSize, setCellSize] = useState(10);
   const [gridDims, setGridDims] = useState({ rows: 0, cols: 0 });
+  const [drawMode, setDrawMode] = useState<"pen" | "eraser">("pen");
 
   const isDrawingRef = useRef(false);
   const drawValueRef = useRef<0 | 1>(1);
   const lastDrawnCellRef = useRef<{ r: number; c: number } | null>(null);
 
   const getGrid = useCallback(() => {
-    return currentGridRef.current === "A"
-      ? gridARef.current
-      : gridBRef.current;
+    return currentGridRef.current === "A" ? gridARef.current : gridBRef.current;
   }, []);
 
   const getNextGrid = useCallback(() => {
-    return currentGridRef.current === "A"
-      ? gridBRef.current
-      : gridARef.current;
+    return currentGridRef.current === "A" ? gridBRef.current : gridARef.current;
   }, []);
 
   const countAlive = useCallback((grid: Uint8Array) => {
@@ -87,7 +169,50 @@ export default function GameOfLife() {
     return count;
   }, []);
 
-  // --- Draw the grid onto canvas ---
+  // --- Offscreen Background Cache ---
+  const updateBackgroundCache = useCallback(
+    (rows: number, cols: number, size: number) => {
+      if (!bgCanvasRef.current) {
+        bgCanvasRef.current = document.createElement("canvas");
+      }
+      const bgCanvas = bgCanvasRef.current;
+      const dpr = window.devicePixelRatio || 1;
+      const w = cols * size;
+      const h = rows * size;
+
+      bgCanvas.width = Math.floor(w * dpr);
+      bgCanvas.height = Math.floor(h * dpr);
+
+      const ctx = bgCanvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Background
+      ctx.fillStyle = "#0B1120";
+      ctx.fillRect(0, 0, w, h);
+
+      // Grid lines
+      ctx.strokeStyle = "rgba(139, 92, 246, 0.06)";
+      ctx.lineWidth = 0.5;
+
+      ctx.beginPath();
+      for (let c = 0; c <= cols; c++) {
+        const x = c * size;
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+      }
+      for (let r = 0; r <= rows; r++) {
+        const y = r * size;
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+      ctx.stroke();
+    },
+    []
+  );
+
+  // --- Draw the grid onto main canvas ---
   const drawGrid = useCallback(() => {
     const canvas = canvasRef.current;
     const grid = getGrid();
@@ -110,29 +235,15 @@ export default function GameOfLife() {
     }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
     const { rows, cols } = dimsRef.current;
 
-    // Background
-    ctx.fillStyle = "#0B1120";
-    ctx.fillRect(0, 0, w, h);
-
-    // Grid lines
-    ctx.strokeStyle = "rgba(139, 92, 246, 0.06)";
-    ctx.lineWidth = 0.5;
-    for (let c = 0; c <= cols; c++) {
-      const x = c * cellSize;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, rows * cellSize);
-      ctx.stroke();
-    }
-    for (let r = 0; r <= rows; r++) {
-      const y = r * cellSize;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(cols * cellSize, y);
-      ctx.stroke();
+    // Fast copy from cached background canvas
+    if (bgCanvasRef.current) {
+      // Due to DPR set on context, we give logical width/height to drawImage
+      ctx.drawImage(bgCanvasRef.current, 0, 0, cols * cellSize, rows * cellSize);
+    } else {
+      ctx.fillStyle = "#0B1120";
+      ctx.fillRect(0, 0, w, h);
     }
 
     // Alive cells
@@ -173,6 +284,7 @@ export default function GameOfLife() {
 
       dimsRef.current = { rows, cols };
       setGridDims({ rows, cols });
+      updateBackgroundCache(rows, cols, cellSize);
 
       const newA = new Uint8Array(size);
       const newB = new Uint8Array(size);
@@ -194,7 +306,7 @@ export default function GameOfLife() {
       setAliveCount(countAlive(newA));
       drawGrid();
     },
-    [cellSize, getGrid, countAlive, drawGrid]
+    [cellSize, getGrid, countAlive, drawGrid, updateBackgroundCache]
   );
 
   // --- Mount + resize ---
@@ -230,8 +342,7 @@ export default function GameOfLife() {
         if (grid && next) {
           const { rows, cols } = dimsRef.current;
           stepGrid(grid, next, rows, cols);
-          currentGridRef.current =
-            currentGridRef.current === "A" ? "B" : "A";
+          currentGridRef.current = currentGridRef.current === "A" ? "B" : "A";
           setGeneration((g) => g + 1);
           setAliveCount(countAlive(next));
           drawGrid();
@@ -277,10 +388,40 @@ export default function GameOfLife() {
     drawGrid();
   };
 
+  const placePreset = (presetData: number[][]) => {
+    setIsPlaying(false);
+    const grid = getGrid();
+    if (!grid) return;
+    grid.fill(0);
+
+    const { rows, cols } = dimsRef.current;
+    const pRows = presetData.length;
+    const pCols = presetData[0].length;
+
+    // Center preset
+    const startR = Math.max(0, Math.floor((rows - pRows) / 2));
+    const startC = Math.max(0, Math.floor((cols - pCols) / 2));
+
+    for (let r = 0; r < pRows; r++) {
+      for (let c = 0; c < pCols; c++) {
+        const gr = startR + r;
+        const gc = startC + c;
+        if (gr < rows && gc < cols) {
+          grid[gr * cols + gc] = presetData[r][c];
+        }
+      }
+    }
+
+    setGeneration(0);
+    setAliveCount(countAlive(grid));
+    drawGrid();
+  };
+
   // --- Mouse / Touch drawing ---
-  const getCellFromEvent = (
-    e: { clientX: number; clientY: number }
-  ): { r: number; c: number } | null => {
+  const getCellFromEvent = (e: {
+    clientX: number;
+    clientY: number;
+  }): { r: number; c: number } | null => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
@@ -293,12 +434,20 @@ export default function GameOfLife() {
     return { r, c };
   };
 
-  const toggleCell = (r: number, c: number) => {
+  const paintLine = (
+    r0: number,
+    c0: number,
+    r1: number,
+    c1: number,
+    val: 0 | 1
+  ) => {
     const grid = getGrid();
     if (!grid) return;
     const { cols } = dimsRef.current;
-    const idx = r * cols + c;
-    grid[idx] = drawValueRef.current;
+    const points = getBresenhamLine(r0, c0, r1, c1);
+    for (const p of points) {
+      grid[p.r * cols + p.c] = val;
+    }
     setAliveCount(countAlive(grid));
     drawGrid();
   };
@@ -306,14 +455,14 @@ export default function GameOfLife() {
   const handleMouseDown = (e: React.MouseEvent) => {
     const cell = getCellFromEvent(e);
     if (!cell) return;
-    const grid = getGrid();
-    if (!grid) return;
-    const { cols } = dimsRef.current;
-    const idx = cell.r * cols + cell.c;
-    drawValueRef.current = grid[idx] ? 0 : 1;
+    if (drawMode === "pen") {
+      drawValueRef.current = 1;
+    } else {
+      drawValueRef.current = 0;
+    }
     isDrawingRef.current = true;
     lastDrawnCellRef.current = cell;
-    toggleCell(cell.r, cell.c);
+    paintLine(cell.r, cell.c, cell.r, cell.c, drawValueRef.current);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -326,8 +475,17 @@ export default function GameOfLife() {
       lastDrawnCellRef.current.c === cell.c
     )
       return;
+
+    if (lastDrawnCellRef.current) {
+      paintLine(
+        lastDrawnCellRef.current.r,
+        lastDrawnCellRef.current.c,
+        cell.r,
+        cell.c,
+        drawValueRef.current
+      );
+    }
     lastDrawnCellRef.current = cell;
-    toggleCell(cell.r, cell.c);
   };
 
   const handleMouseUp = () => {
@@ -336,22 +494,20 @@ export default function GameOfLife() {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
+    // Single touch drawing only, prevent scrolling while drawing
+    if (e.touches.length === 1) e.preventDefault();
     const touch = e.touches[0];
     const cell = getCellFromEvent(touch);
     if (!cell) return;
-    const grid = getGrid();
-    if (!grid) return;
-    const { cols } = dimsRef.current;
-    const idx = cell.r * cols + cell.c;
-    drawValueRef.current = grid[idx] ? 0 : 1;
+
+    drawValueRef.current = drawMode === "pen" ? 1 : 0;
     isDrawingRef.current = true;
     lastDrawnCellRef.current = cell;
-    toggleCell(cell.r, cell.c);
+    paintLine(cell.r, cell.c, cell.r, cell.c, drawValueRef.current);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault();
+    if (e.touches.length === 1) e.preventDefault();
     if (!isDrawingRef.current) return;
     const touch = e.touches[0];
     const cell = getCellFromEvent(touch);
@@ -362,8 +518,17 @@ export default function GameOfLife() {
       lastDrawnCellRef.current.c === cell.c
     )
       return;
+
+    if (lastDrawnCellRef.current) {
+      paintLine(
+        lastDrawnCellRef.current.r,
+        lastDrawnCellRef.current.c,
+        cell.r,
+        cell.c,
+        drawValueRef.current
+      );
+    }
     lastDrawnCellRef.current = cell;
-    toggleCell(cell.r, cell.c);
   };
 
   const handleTouchEnd = () => {
@@ -384,17 +549,17 @@ export default function GameOfLife() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding: 120px 20px 40px;
+          padding: 80px 20px 40px;
           overflow: hidden;
         }
 
         .gol-header {
           text-align: center;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
         }
 
         .gol-title {
-          font-size: 3rem;
+          font-size: 2.5rem;
           font-weight: 800;
           letter-spacing: -0.05em;
           background: linear-gradient(135deg, #38BDF8 0%, #A78BFA 100%);
@@ -405,7 +570,7 @@ export default function GameOfLife() {
 
         .gol-subtitle {
           color: #94A3B8;
-          font-size: 1.05rem;
+          font-size: 1rem;
           font-weight: 400;
           max-width: 600px;
           margin: 0 auto;
@@ -414,10 +579,10 @@ export default function GameOfLife() {
 
         .gol-workspace {
           display: flex;
-          gap: 24px;
+          gap: 20px;
           width: 100%;
           max-width: 1200px;
-          height: 65vh;
+          height: 70vh;
           min-height: 400px;
         }
 
@@ -437,6 +602,7 @@ export default function GameOfLife() {
           width: 100%;
           height: 100%;
           display: block;
+          touch-action: none;
         }
 
         .gol-overlay-badge {
@@ -474,7 +640,7 @@ export default function GameOfLife() {
         }
 
         .gol-control-panel {
-          width: 300px;
+          width: 320px;
           flex-shrink: 0;
           background: rgba(15, 23, 42, 0.6);
           border: 1px solid rgba(255,255,255,0.05);
@@ -489,10 +655,10 @@ export default function GameOfLife() {
         }
 
         .gol-panel-title {
-          font-size: 1.15rem;
+          font-size: 1.1rem;
           font-weight: 600;
           border-bottom: 1px solid rgba(255,255,255,0.1);
-          padding-bottom: 12px;
+          padding-bottom: 10px;
           margin: 0;
           color: #F8FAFC;
         }
@@ -539,6 +705,45 @@ export default function GameOfLife() {
           transform: scale(1.2);
         }
 
+        .gol-tool-toggle {
+          display: flex;
+          background: rgba(0,0,0,0.4);
+          border-radius: 10px;
+          overflow: hidden;
+          padding: 4px;
+        }
+
+        .gol-tool-btn {
+          flex: 1;
+          background: transparent;
+          border: none;
+          color: #94A3B8;
+          padding: 8px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          border-radius: 6px;
+          transition: all 0.2s;
+        }
+
+        .gol-tool-btn.active {
+          background: #38BDF8;
+          color: #0F172A;
+          box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .gol-tool-btn.eraser.active {
+          background: #EF4444;
+          color: #FFF;
+          box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .gol-preset-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+
         .gol-stats-box {
           background: rgba(0,0,0,0.3);
           border-radius: 12px;
@@ -583,28 +788,31 @@ export default function GameOfLife() {
           box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
         }
 
-        .gol-btn-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          gap: 8px;
-        }
-
         .gol-secondary-btn {
           background: rgba(255,255,255,0.05);
           border: 1px solid rgba(255,255,255,0.1);
           color: #A78BFA;
-          padding: 10px 8px;
-          border-radius: 10px;
+          padding: 8px;
+          border-radius: 8px;
           font-weight: 500;
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           cursor: pointer;
           transition: all 0.2s ease;
+          display: flex;
+          justify-content: center;
+          align-items: center;
         }
 
         .gol-secondary-btn:hover {
           background: rgba(167, 139, 250, 0.1);
           border-color: rgba(167, 139, 250, 0.3);
           transform: translateY(-1px);
+        }
+        
+        .gol-btn-row {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
         }
 
         @media (max-width: 768px) {
@@ -628,8 +836,7 @@ export default function GameOfLife() {
       <div className="gol-header">
         <h1 className="gol-title">Conway&apos;s Game of Life</h1>
         <p className="gol-subtitle">
-          Click to draw cells, then hit play to watch them evolve.
-          Simple rules, emergent complexity.
+          Click and drag to draw patterns, load presets, and watch complexity emerge.
         </p>
       </div>
 
@@ -654,9 +861,45 @@ export default function GameOfLife() {
         </div>
 
         <div className="gol-control-panel">
-          <h2 className="gol-panel-title">Simulation Controls</h2>
+          <h2 className="gol-panel-title">Controls</h2>
 
           <div className="gol-control-group">
+            <div className="gol-tool-toggle">
+              <button
+                className={`gol-tool-btn ${drawMode === "pen" ? "active" : ""}`}
+                onClick={() => setDrawMode("pen")}
+              >
+                Pen
+              </button>
+              <button
+                className={`gol-tool-btn eraser ${
+                  drawMode === "eraser" ? "active" : ""
+                }`}
+                onClick={() => setDrawMode("eraser")}
+              >
+                Eraser
+              </button>
+            </div>
+          </div>
+
+          <div className="gol-control-group">
+            <div className="gol-control-label">
+              <span>Presets</span>
+            </div>
+            <div className="gol-preset-grid">
+              {PRESETS.map((p) => (
+                <button
+                  key={p.name}
+                  className="gol-secondary-btn"
+                  onClick={() => placePreset(p.data)}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="gol-control-group" style={{ marginTop: "4px" }}>
             <div className="gol-control-label">
               <span>Speed</span>
               <span>{speed}ms / gen</span>
@@ -694,11 +937,11 @@ export default function GameOfLife() {
               <span>{generation.toLocaleString()}</span>
             </div>
             <div className="gol-stat-line">
-              <span>Alive:</span>
+              <span>Alive Cells:</span>
               <span>{aliveCount.toLocaleString()}</span>
             </div>
             <div className="gol-stat-line">
-              <span>Grid:</span>
+              <span>Grid Size:</span>
               <span>
                 {gridDims.cols} &times; {gridDims.rows}
               </span>
@@ -717,9 +960,9 @@ export default function GameOfLife() {
               Step
             </button>
             <button className="gol-secondary-btn" onClick={handleRandom}>
-              Random
+              Randomize
             </button>
-            <button className="gol-secondary-btn" onClick={handleClear}>
+            <button className="gol-secondary-btn" style={{color:"#F87171"}} onClick={handleClear}>
               Clear
             </button>
           </div>
